@@ -32,6 +32,7 @@ namespace Feedability.Controllers
     [Route("api/[controller]")]
     public class FullFeedController : Controller
     {
+		// store hosting environment to get info on the path to find the phantomjs files
 		private static IHostingEnvironment _env;
 
 		public FullFeedController(IHostingEnvironment env)
@@ -39,6 +40,7 @@ namespace Feedability.Controllers
 			_env = env;
 		}
 
+		// debug method to show which articles are cached
 		[HttpGet("cache")]
 		public IEnumerable<CachedArticle> GetCache([FromQuery]string url)
 		{
@@ -61,6 +63,7 @@ namespace Feedability.Controllers
 			}
 		}
 
+		// debug method to clear the cache either by feed url or wholesale
 		[HttpGet("clearcache")]
 		public string ClearCache([FromQuery]string url)
 		{
@@ -74,6 +77,7 @@ namespace Feedability.Controllers
 			}
 		}
 
+		// preview the readability of an article (with white/black-list selectors)
 		[HttpGet("article")]
 		public ContentResult GetArticle([FromQuery]string url, [FromQuery]string whitelist, [FromQuery]string blacklist)
 		{
@@ -90,6 +94,9 @@ namespace Feedability.Controllers
 			return retval;
 		}
 
+		// get the feed with description/content translated to readability versions of 
+		// the articles (with white/black-list selectors) - only processes a few items at a time
+		// to avoid super-long request times
 		[HttpGet("feed")]
 		public async Task<ContentResult> GetFeed([FromQuery]string url, [FromQuery]string whitelist, [FromQuery]string blacklist)
 		{
@@ -131,9 +138,10 @@ namespace Feedability.Controllers
 			}
 		}
 
+		// performs the translation of articles, either using cache or calling the 
+		// phantomJS helper to run readability on the article link url
 		private static void TransformArticles(string feedUrl, string whitelist, string blacklist, IEnumerable<ArticleInfo> articles)
 		{
-
 			// check cache first
 			using (var conn = SqliteUtil.GetConn())
 			{
@@ -217,6 +225,7 @@ namespace Feedability.Controllers
 			}
 		}
 
+		// fixes invalid feed xml so that it can be parsed by XDocument
 		private string FixMarkup(string xml)
 		{
 			HtmlNode.ElementsFlags.Remove("link");

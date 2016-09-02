@@ -78,18 +78,19 @@ page.onConsoleMessage = function(msg) {
   consoleLogs.push(msg);
 };
 
-/// FEEDABILITY
+/// FEEDABILITY BEGIN
 page.settings.resourceTimeout = 2500; // 1000 was too short, caused errors
 
 page.onResourceRequested = function (data, req) {
 	if (
-		// block twitter widget to avoid it from creating shadow dom
+		// block twitter widget to avoid it from creating shadow dom and
+		// destroying the original dom 
 		data.url.match(/platform.twitter.com/g) 
 	) {
 		req.abort();
 	}
 }
-/// FEEDABILITY
+/// FEEDABILITY END
 
 page.open(url, function(status) {
   if (status !== "success") {
@@ -98,11 +99,11 @@ page.open(url, function(status) {
   if (!page.injectJs(readabilityPath)) {
     exitWithError("Couldn't inject " + readabilityPath);
   }
-  /// FEEDABILITY
+  /// FEEDABILITY BEGIN
   if (system.args[4]) {
-  	page.evaluateJavaScript(system.args[4]);
+  	page.evaluateJavaScript(system.args[4]); // inject the white/black-list script
   }
-  /// FEEDABILITY
+  /// FEEDABILITY END
   var result = page.evaluate(runReadability, url, page.settings.userAgent, page.content);
   if (result && result.error) {
     result.error.consoleLogs = consoleLogs;

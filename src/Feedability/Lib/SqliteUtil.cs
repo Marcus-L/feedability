@@ -21,52 +21,20 @@ namespace Feedability
 				conn.Open();
 
 				// create database if it doesn't exist
-				conn.ExecuteNonQuery(@"
+				var cmd = new SqliteCommand(@"
 					CREATE TABLE IF NOT EXISTS Articles (
 						FeedUrl TEXT, 
 						ArticleUrl TEXT, 
 						LastFetchedUTC DATETIME, 
 						Content TEXT,
 						Readable BOOLEAN
-					);");
+					);", conn);
+				cmd.ExecuteNonQuery();
 
-				// reset
-				//conn.ExecuteNonQuery("DELETE FROM Articles");
+				//// reset (if you pollute the cache by mistake)
+				//var delCmd = new SqliteCommand("DELETE FROM Articles",conn);
+				//delCmd.ExecuteNonQuery();
 			}
 		}
     }
-
-	// Reused and Modified Code - https://github.com/aspnet/Microsoft.Data.Sqlite/blob/dev/src/Microsoft.Data.Sqlite/Utilities/DbConnectionExtensions.cs  
-	internal static class DbConnectionExtensions
-	{
-		public static int ExecuteNonQuery(this DbConnection connection,
-			string commandText, int timeout = 30)
-		{
-			var command = connection.CreateCommand();
-			command.CommandTimeout = timeout;
-			command.CommandText = commandText;
-			return command.ExecuteNonQuery();
-		}
-
-		public static T ExecuteScalar<T> (this DbConnection connection,
-			 string commandText, int timeout = 30) =>  
-        (T) connection.ExecuteScalar(commandText, timeout);  
-  
-    private static object ExecuteScalar(this DbConnection connection,
-		string commandText, int timeout)
-		{
-			var command = connection.CreateCommand();
-			command.CommandTimeout = timeout;
-			command.CommandText = commandText;
-			return command.ExecuteScalar();
-		}
-
-		public static DbDataReader ExecuteReader(this DbConnection connection,
-			string commandText)
-		{
-			var command = connection.CreateCommand();
-			command.CommandText = commandText;
-			return command.ExecuteReader();
-		}
-	}
 }

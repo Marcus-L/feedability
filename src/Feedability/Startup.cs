@@ -45,7 +45,7 @@ namespace Feedability
 					template: "{controller=Home}/{action=Index}/{id?}");
 			});
 
-			// configure database 
+			// configure feedability database 
 			SqliteUtil.Init();
         }
 	}

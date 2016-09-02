@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Feedability
 {
+	#region Readability JSON data model
 	public class Uri
 	{
 		public string host { get; set; }
@@ -38,6 +39,7 @@ namespace Feedability
 		public string userAgent { get; set; }
 		public List<string> consoleLogs { get; set; }
 	}
+	#endregion
 
 	public class PhantomReadability
     {
@@ -45,6 +47,8 @@ namespace Feedability
 		{
 			// current chrome UA
 			string useragent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36";
+
+			// injected JS to alter the outcome of the readability algorithm
 			string inject = @"
 function() {
 	function feedability_el(q,hide) {
@@ -60,6 +64,7 @@ function() {
 		}
 	}
 ";
+			// use passed-in white/black-list rules to alter the DOM
 			if (whitelist != null && whitelist != "")
 				inject += string.Join("\n", whitelist.Split(',').Select(wl => "feedability_el('" + wl + "',false);"));
 			if (blacklist != null && blacklist != "")
@@ -67,6 +72,10 @@ function() {
 
 			inject += "\n}";
 
+			// run the PhantomJS process using the phantom-scrape.js file from readable-proxy
+			// see: https://github.com/n1k0/readable-proxy/blob/master/phantom-scrape.js for details
+			// it has been slightly modified to inject the script passed in and also to 
+			// fix twitter embedded widgets
 			using (var process = new Process
 			{
 				StartInfo = new ProcessStartInfo
@@ -81,7 +90,8 @@ function() {
 				}
 			})
 			{
-				// stream buffers
+				// using this algorithm for getting the process output to avoid
+				// code hanging - see: http://stackoverflow.com/a/7608823/490657 for details
 				var output = new StringBuilder();
 				var error = new StringBuilder();
 
@@ -119,7 +129,11 @@ function() {
 						errorWaitHandle.WaitOne(timeout))
 					{
 						// Process completed. Check process.ExitCode here.
+
+						// replace whitelist addition (from the feedability_el function)
 						var json = output.ToString().Replace(",,,,,,,,,,", "");
+
+						// parse the output
 						var retval = JsonConvert.DeserializeObject<ReadabilityObject>(json);
 						if (retval == null)
 						{
