@@ -37,7 +37,16 @@ namespace Feedability
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseMvc();
+			app.UseDeveloperExceptionPage();
+            app.UseMvc(routes =>
+			{
+				routes.MapRoute(
+					name: "default",
+					template: "{controller=Home}/{action=Index}/{id?}");
+			});
+
+			// configure database 
+			SqliteUtil.Init();
         }
-    }
+	}
 }
