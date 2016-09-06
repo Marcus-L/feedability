@@ -8,8 +8,9 @@ function feedability_toast(message) {
 
 // url helper function
 function feedability_url() {
-	var url = location.protocol + '//' + location.hostname + (location.port ? ":" + location.port : "") + location.pathname +
-		"api/fullfeed/" + $("#method").val()
+	var url = location.protocol + '//' + location.hostname + (location.port ? ":" + location.port : "")
+		+ location.pathname + (location.pathname.endsWith("/") ? "" : "/") 
+		+ "api/fullfeed/" + $("#method").val()
 		+ "?url=" + encodeURIComponent($("#url").val());
 	if ($("#whitelist").get(0).value.trim() !== "")
 		url = url + "&whitelist=" + encodeURIComponent($("#whitelist").val());
