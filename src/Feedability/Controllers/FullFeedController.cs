@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -32,6 +33,8 @@ namespace Feedability.Controllers
     [Route("api/[controller]")]
     public class FullFeedController : Controller
     {
+		public const string AtomNS = "http://www.w3.org/2005/Atom";
+
 		// store hosting environment to get info on the path to find the phantomjs files
 		private static IHostingEnvironment _env;
 
@@ -107,7 +110,10 @@ namespace Feedability.Controllers
 				{
 					var feedResult = await client.GetAsync(url);
 					var feedData = FixMarkup(await feedResult.Content.ReadAsStringAsync());
-					var feedDoc = XDocument.Parse(feedData);
+					var xmlReader = XmlReader.Create(new StringReader(feedData));
+					var feedDoc = XDocument.Load(xmlReader);
+					var nsManager = new XmlNamespaceManager(xmlReader.NameTable);
+					nsManager.AddNamespace("atom", AtomNS);
 					var articles = new List<ArticleInfo>();
 
 					// fix RSS
@@ -118,12 +124,18 @@ namespace Feedability.Controllers
 						}));
 
 					// fix ATOM
-					articles.AddRange(feedDoc.XPathSelectElements("/feed/entry")
+					articles.AddRange(feedDoc.XPathSelectElements("/atom:feed/atom:entry", nsManager)
 						.Select(e => new ArticleInfo
 						{
-							ArticleUrl = e.Element("link").Value,
-							ReplaceContents = e.Element("content")
+							ArticleUrl = e.Element(XName.Get("link", AtomNS)).Attribute("href").Value,
+							ReplaceContents = e.Element(XName.Get("content", AtomNS))
 						}));
+
+					// remove PuSH link to avoid aggregators using pushed content
+					feedDoc.XPathSelectElements("/rss/channel/atom:link[@rel='hub']", nsManager)?
+						.ToList().ForEach(x => x.Remove()); // rss
+					feedDoc.XPathSelectElements("/atom:feed/atom:link[@rel='hub']", nsManager)?
+						.ToList().ForEach(x => x.Remove()); // atom
 
 					TransformArticles(url, whitelist, blacklist, articles);
 
