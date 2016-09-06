@@ -2,154 +2,68 @@
 }
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>FullFeed</title>
+<head>
+	<title>FullFeed</title>
 
-		<!--Import Google Icon Font-->
-		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<!-- 1. Load webcomponents-lite.min.js for polyfill support. -->
+	<script src="lib/webcomponentsjs/webcomponents-lite.min.js"></script>
 
-		<!-- Compiled and minified CSS -->
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
-		
-		<!-- highlight.js -->
-		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/styles/default.min.css">
+	<!-- 2. Use an HTML Import to bring in some elements. -->
+	<link rel="import" href="~/lib/paper-input/paper-input.html">
+	<link rel="import" href="~/lib/paper-button/paper-button.html">
+	<link rel="import" href="~/lib/paper-progress/paper-progress.html">
+	<link rel="import" href="~/lib/paper-dropdown-menu/paper-dropdown-menu.html">
+	<link rel="import" href="~/lib/paper-listbox/paper-listbox.html">
+	<link rel="import" href="~/lib/paper-item/paper-item.html">
+	<link rel="import" href="~/lib/paper-toast/paper-toast.html">
+	<link rel="import" href="~/lib/iron-icon/iron-icon.html">
+	<link rel="import" href="~/lib/iron-icons/iron-icons.html">
+	<link rel="import" href="~/lib/iron-flex-layout/iron-flex-layout-classes.html">
+	<link rel="import" href="~/app/feedability-styles.html">
 
-		<!--Let browser know website is optimized for mobile-->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<!-- import the styles modules -->
+	<style is="custom-style" include="iron-flex iron-flex-factors iron-positioning feedability-styles"></style>
+</head>
+<body class="fullbleed vertical layout">
+	<header class="indigo">
+		<div class="horizontal layout">
+			<h2 class="flex-2">
+				<iron-icon style="color:navy;" icon="icons:chrome-reader-mode"></iron-icon> Feedability
+			</h2>
+			<paper-dropdown-menu id="method" class="flex-1 dark" label="Type" always-float-label>
+				<paper-listbox class="dropdown-content" selected="0">
+					<paper-item>Feed</paper-item>
+					<paper-item>Article</paper-item>
+				</paper-listbox>
+			</paper-dropdown-menu>
 
-		<style type="text/css">
-			.feedability-top {
-				color: white
-			}
-			.feedability-display {
-				margin: 0px 20px 20px; 
-				flex-grow: 1; 
-				border: 1px solid gray; 
-				background: #eee;
-				overflow: auto;
-				padding: 0px 15px;
-			}
-			.feedability-code {
-				font-family: Consolas;
-				font-size: 9pt;
-				white-space: pre;
-			}
-			#toast-container {
-				top: auto;
-				bottom: 5%;
-				right: 40%;
-				left: auto;
-			}
-		</style>
-	</head>
-	<body style="overflow: hidden">
-		<div style="display:flex; height:100vh; flex-direction: column">
-			<form>
-				<div class="row indigo darken-1 feedability-top">
-					<div class="input-field col s2" style="font-size: 24pt;">
-						Feedability
-					</div>
-					<div class="input-field col s1">
-						<select id="method">
-							<option value="feed">Feed</option>
-							<option value="article">Article</option>
-						</select>
-						<label>Type</label>
-					</div>
-					<div class="input-field col s9">
-						<input placeholder="https://example.api/feed" id="url" type="text" class="validate">
-						<label for="url">URL</label>
-					</div>
-					<div class="input-field col s2 offset-s2">
-						<input placeholder="ex: div.myclass" id="whitelist" type="text" class="validate">
-						<label for="whitelist">Whitelist Selectors</label>
-					</div>
-					<div class="input-field col s2">
-						<input placeholder="ex: #advertisement_id" id="blacklist" type="text" class="validate">
-						<label for="blacklist">Blacklist Selectors</label>
-					</div>
-					<div class="input-field col s6">
-						<a id="go" class="waves-effect waves-light pink accent-4 btn"><i class="material-icons left">send</i>Run API</a> &nbsp;
-						<a id="copy" class="waves-effect waves-light indigo darken-3 btn"><i class="material-icons left">link</i>Copy Link</a> &nbsp; 
-						<a id="clear" class="waves-effect waves-light indigo darken-4 btn"><i class="material-icons left">delete</i>Clear Cache</a> &nbsp; 
-						<div id="loader" class="progress" style="display:none">
-							<div class="indeterminate"></div>
-						</div>
-						<div id="linkText" style="display:none"></div>
-					</div>
-				</div>
-			</form>
-
-			<div id="display" class="feedability-display xml">
-				
+			<paper-input id="url" class="flex-9 dark" label="URL" always-float-label placeholder="https://example.api/feed"></paper-input>
+		</div>
+		<div class="horizontal layout">
+			<h2 class="flex-2"></h2>
+			<paper-input id="whitelist" class="flex-2 dark" label="Whitelist Selectors" always-float-label placeholder="ex: div.myclass"></paper-input>
+			<paper-input id="blacklist" class="flex-2 dark" label="Blacklist Selectors" always-float-label placeholder="ex: #advertisement_id,#advert2"></paper-input>
+			<div class="flex-6">
+				<paper-button onclick="feedability_run()" class="pink" raised><iron-icon icon="icons:send"></iron-icon>
+					&nbsp; Run API
+					&nbsp; <paper-progress id="loader" indeterminate style="display:none"></paper-progress>
+				</paper-button>
+				<paper-button onclick="feedability_copy()" class="indigo" raised><iron-icon icon="icons:link"></iron-icon>&nbsp; Copy Link</paper-button>
+				<paper-button onclick="feedability_clear()" class="indigo" raised><iron-icon icon="icons:delete"></iron-icon>&nbsp; Clear Cache</paper-button>
+				<div id="linkText" style="display:none"></div>
 			</div>
 		</div>
+	</header>
 
-		<!-- JS libraries -->
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/highlight.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+	<div id="display" class="flex feedability-display xml"></div>
 
-		<!-- Feedability script -->
-		<script>
-			function feedability_url() {
-				var url = location.protocol + '//' + location.hostname + (location.port ? ":" + location.port : "") + location.pathname +
-					"api/fullfeed/" + $("#method").val()
-					+ "?url=" + encodeURIComponent($("#url").val());
-				if ($("#whitelist").val().trim() != "")
-					url = url + "&whitelist=" + encodeURIComponent($("#whitelist").val());
-				if ($("#blacklist").val().trim() != "")
-					url = url + "&blacklist=" + encodeURIComponent($("#blacklist").val());
-				return url;
-			}
-			$(document).ready(function () {
-				$('select').material_select();
-			});
-			// run API by calling controller
-			$("#go").click(function () {
-				var method = $("#method").val();
-				$("#loader").show();
-				$.ajax(feedability_url(), { dataType: "text" })
-					.done(function (data) {
-						if (method == "feed") {
-							// display xml response
-							$("#display")
-								.addClass("feedability-code")
-								.text(data);
-							hljs.highlightBlock($("#display").get(0));
-						} else if (method == "article") {
-							// render readable article
-							$("#display")
-								.empty()
-								.removeClass("feedability-code")
-								.append(data);
-						}
-					})
-					.always(function () {
-						$("#loader").hide();
-					});
-			});
+	<paper-toast id="toaster"></paper-toast>
 
-			// clear cache by calling controller
-			$("#clear").click(function () {
-				$.ajax("api/fullfeed/clearcache?url=" + encodeURIComponent($("#url").val()))
-					.done(function () { Materialize.toast("Cache cleared", 3000); })
-					.fail(function () { Materialize.toast("Error clearing cache", 3000); });
-			});
+	<!-- JS libraries -->
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/highlight.min.js"></script>
 
-			// copy Link to clipboard
-			$("#copy").click(function () {
-				var linkText = $("#linkText").text(feedability_url()).show();
-				window.getSelection().removeAllRanges();
-				var range = document.createRange();
-				range.selectNode(linkText.get(0));
-				window.getSelection().addRange(range);
-				document.execCommand("copy");
-				window.getSelection().removeAllRanges();
-				$("#linkText").text("").hide();
-
-				Materialize.toast("Link copied to clipboard", 3000);
-			});
-		</script>
-	</body>
+	<!-- Feedability script -->
+	<script type="text/javascript" src="~/app/feedability.js"></script>
+</body>
 </html>

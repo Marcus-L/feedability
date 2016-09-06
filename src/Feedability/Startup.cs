@@ -44,6 +44,7 @@ namespace Feedability
 					name: "default",
 					template: "{controller=Home}/{action=Index}/{id?}");
 			});
+			app.UseStaticFiles();
 
 			// configure feedability database 
 			SqliteUtil.Init();

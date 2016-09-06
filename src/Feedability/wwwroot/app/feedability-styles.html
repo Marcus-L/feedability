@@ -1,0 +1,62 @@
+﻿<!-- feedability-styles.html -->
+<dom-module id="feedability-styles">
+  <template>
+    <style>
+		body {
+			overflow: hidden;
+		}
+		header h2 {
+			text-align: center;
+			font-family: "Roboto";
+			font-weight: normal;
+		}
+		header > div > * {
+			padding-right: 1em;
+		}
+
+		.feedability-display {
+			margin: 20px;
+			border: 1px solid gray;
+			background: #eee;
+			overflow: auto;
+			padding: 15px;
+			font-family: "Roboto";
+		}
+
+		.feedability-code {
+			font-family: Consolas;
+			font-size: 9pt;
+			white-space: pre;
+		}
+
+		#loader {
+			width: 15px;
+		}
+
+		header.indigo {
+			background-color: var(--paper-indigo-500);
+			color: white;
+		}
+		paper-button.indigo {
+			background-color: var(--paper-indigo-800);
+			color: white;
+		}
+		paper-button.pink {
+			background-color: var(--paper-pink-a200);
+			color:white;
+		}
+		paper-input.dark {
+			--paper-input-container-input-color: white;
+			--paper-input-container-color: var(--paper-grey-400);
+			--paper-input-container-focus-color: var(--paper-indigo-a100);
+			--paper-input-container-label: { color: var(--paper-grey-500); }
+		}
+		paper-dropdown-menu.dark {
+			--paper-input-container-input-color: white;
+			--paper-input-container-color: var(--paper-grey-400);
+			--paper-input-container-focus-color: var(--paper-indigo-a100);
+			--paper-input-container-label: { color: var(--paper-grey-500); }
+		}
+	</style>
+  </template>
+</dom-module>
