@@ -1,5 +1,7 @@
 feedability
 ===========
+![Screenshot](/screenshot.jpg)
+
 About
 -----
 Feedability is a stand-alone ASP.NET Core website and can be hosted in IIS or with the `dotnet` command. Its features include:
