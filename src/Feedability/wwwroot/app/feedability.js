@@ -72,6 +72,11 @@ function feedability_run() {
 					.append(data);
 			}
 		})
+		.fail(function (data) {
+			$("#display")
+				.addClass("feedability-code")
+				.text(data.responseText);
+		})
 		.always(function () {
 			$("#loader").hide();
 		});

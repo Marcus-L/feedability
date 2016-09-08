@@ -20,7 +20,8 @@
 		"System.Xml.XPath.XDocument": "4.0.1",
 		"HtmlAgilityPack": "1.4.9.5",
 		"Newtonsoft.Json": "9.0.1",
-		"Microsoft.Data.Sqlite": "1.0.0"
+    "Microsoft.Data.Sqlite": "1.0.0",
+    "AspNetCoreRateLimit": "1.0.0"
 	},
 
 	"tools": {

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using AspNetCoreRateLimit;
 
 namespace Feedability
 {
@@ -27,8 +28,15 @@ namespace Feedability
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddMvc();
+			// set up IP Rate limiting
+			services.AddOptions(); // needed to load configuration from appsettings.json
+			services.AddMemoryCache(); // needed to store rate limit counters and ip rules
+			services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting")); //load general configuration from appsettings.json
+			services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>(); // inject counter 
+			services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>(); // inject rule store
+
+			// Add framework services.
+			services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,7 +45,13 @@ namespace Feedability
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+			// enable rate limiter
+			app.UseIpRateLimiting();
+
+			// shoe errors 
 			app.UseDeveloperExceptionPage();
+
+			// set up controller
             app.UseMvc(routes =>
 			{
 				routes.MapRoute(
