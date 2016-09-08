@@ -1,18 +1,37 @@
 feedability
 ===========
-Configuration
--------------
-TODO
-
-Deploy
-------
-TODO
+About
+-----
+Feedability is a stand-alone ASP.NET Core website and can be hosted in IIS or with the `dotnet` command. Its features include:
+* A web interface for testing sites (articles) for simplification with the Readability library
+* A web interface for viewing RSS/Atom feeds with feed entry contents replaced with the Readability-processed versions of the entry links. 
+* A web service for processing feeds, consumable by RSS readers such as Feedly and cached per-feed
+* A web service for returning readable article HTML and managing the feed cache
 
 Usage
 -----
-* Build & Deploy 
-* Run the web interface which will provide UI for testing the Web API
+* Build & Publish, build output is in src\Feedability\bin\Release\PublishOutput
+* Run the web interface which will provide UI for testing the Web API (either by hosting in IIS with the [.NET Core Windows Server Hosting bundle](https://go.microsoft.com/fwlink/?LinkId=817246) or via the `dotnet Feedability.dll` command)
+* Test article Readability output (adjust white/blacklist css selectors) and Feed output
 * Provide the feed link to the RSS reader
+
+Demo/Examples (current as of 9/8/2016)
+--------
+Demo|Site|Feed Url|Whitelist|Blacklist
+---|---|---|---|---
+[Link](http://m4rc.us/sandbox/u/feedability/?method=article&url=https%3A%2F%2Ftechcrunch.com%2F2016%2F09%2F02%2Fgoogles-new-project-muse-proves-machines-arent-that-great-at-fashion-design%2F&whitelist=div.embed-twitter%2C+div.thumbnails&blacklist=div.slideshow+ol)|TechCrunch|https://techcrunch.com/feed|div.embed-twitter, div.thumbnails|div.slideshow ol
+[Link](http://m4rc.us/sandbox/u/feedability/?method=article&url=http%3A%2F%2Fphandroid.com%2F2016%2F09%2F08%2Ftwitter-direct-message-update%2F&whitelist=&blacklist=div.ng-scope%2C+div.further-reading-container)|Phandroid|http://phandroid.com/feed||div.ng-scope, div.further-reading-container
+[Link](http://m4rc.us/sandbox/u/feedability/?method=article&url=http%3A%2F%2Frapidtravelchai.boardingarea.com%2F2016%2F09%2F01%2Fibizas-curio-hilton%2F&whitelist=.et_social_inline%2C+.et_social_media_wrapper&blacklist=%23jp-relatedposts%2C+.entry-meta%2C+.ba-disclosure)|Rapid Travel Chai|http://rapidtravelchai.boardingarea.com|.et_social_inline, .et_social_media_wrapper|#jp-relatedposts, .entry-meta, .ba-disclosure
+
+Tech Stack
+----------
+The server side is built using:
+* [mozilla readability](https://github.com/mozilla/readability) - a fork of the original Arc90 readability javascript library
+* [PhantomJS](http://phantomjs.org/) - a headless web browser to fetch web pages and run readability
+* [Sqlite](https://www.sqlite.org/) and the [Microsoft.Data.Sqlite](https://github.com/aspnet/Microsoft.Data.Sqlite) .NET core interface for caching processed feeds
+
+The client side uses:
+* [Polymer Project](https://www.polymer-project.org/1.0/) - web components for UI and material design
 
 External Licenses
 -----------------
