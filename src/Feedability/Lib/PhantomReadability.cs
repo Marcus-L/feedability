@@ -66,9 +66,9 @@ function() {
 ";
 			// use passed-in white/black-list rules to alter the DOM
 			if (whitelist != null && whitelist != "")
-				inject += string.Join("\n", whitelist.Split(',').Select(wl => "feedability_el('" + wl + "',false);"));
+				inject += string.Join("\n", whitelist.Split(',').Select(wl => "feedability_el('" + wl.Trim() + "',false);"));
 			if (blacklist != null && blacklist != "")
-				inject += string.Join("\n", blacklist.Split(',').Select(bl => "feedability_el('" + bl + "',true);"));
+				inject += string.Join("\n", blacklist.Split(',').Select(bl => "feedability_el('" + bl.Trim() + "',true);"));
 
 			inject += "\n}";
 

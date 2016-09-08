@@ -1,5 +1,23 @@
 ﻿///<reference path="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"/>
 ///<reference path="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/highlight.min.js"/>
+///<reference path="https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.18.1/URI.min.js"/>
+
+(function feedability_startup() {
+	var query = URI(location.href).search(true);
+	if (query.method) {
+		$("#method_list").get(0).select(query.method);
+	}
+	if (query.url) {
+		$("#url").get(0).value = query.url;
+	}
+	if (query.whitelist) {
+		$("#whitelist").get(0).value = query.whitelist;
+	}
+	if (query.blacklist) {
+		$("#blacklist").get(0).value = query.blacklist;
+	}
+	window.onpopstate = feedability_startup;
+})();
 
 // toast helper function
 function feedability_toast(message) {
@@ -26,8 +44,18 @@ function feedability_url() {
 // run API by calling controller
 function feedability_run() {
 	var method = $("#method").val();
-	console.log(method);
 	$("#loader").show();
+
+	// update the url
+	var uri = URI(location.href);
+	uri.setSearch({
+		method: $("#method_list").get(0).selected,
+		url: $("#url").get(0).value,
+		whitelist: $("#whitelist").get(0).value,
+		blacklist: $("#blacklist").get(0).value
+	});
+	window.history.pushState(null, "", uri.path() + uri.search());
+
 	$.ajax(feedability_url(), { dataType: "text" })
 		.done(function (data) {
 			if (method === "Feed") {
