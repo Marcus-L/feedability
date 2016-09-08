@@ -6,10 +6,14 @@ function feedability_toast(message) {
 	$("#toaster").get(0).show({ text: message, duration: 3000 });
 }
 
-// url helper function
+function feedability_baseurl() {
+	return location.protocol + '//' + location.hostname + (location.port ? ":" + location.port : "")
+		+ location.pathname + (location.pathname.endsWith("/") ? "" : "/");
+}
+
+// run url helper function
 function feedability_url() {
-	var url = location.protocol + '//' + location.hostname + (location.port ? ":" + location.port : "")
-		+ location.pathname + (location.pathname.endsWith("/") ? "" : "/") 
+	var url = feedability_baseurl()
 		+ "api/fullfeed/" + $("#method").val()
 		+ "?url=" + encodeURIComponent($("#url").val());
 	if ($("#whitelist").get(0).value.trim() !== "")
@@ -47,7 +51,7 @@ function feedability_run() {
 
 // clear cache by calling controller
 function feedability_clear() {
-	$.ajax("api/fullfeed/clearcache?url=" + encodeURIComponent($("#url").val()))
+	$.ajax(feedability_baseurl() + "api/fullfeed/clearcache?url=" + encodeURIComponent($("#url").val()))
 		.done(function () { feedability_toast("Cache cleared"); })
 		.fail(function () { feedability_toast("Error clearing cache"); });
 }
