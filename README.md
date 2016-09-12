@@ -1,5 +1,7 @@
 feedability
 ===========
+![Screenshot](/screenshot.jpg)
+
 About
 -----
 Feedability is a stand-alone ASP.NET Core website and can be hosted in IIS or with the `dotnet` command. Its features include:
@@ -11,6 +13,7 @@ Feedability is a stand-alone ASP.NET Core website and can be hosted in IIS or wi
 Usage
 -----
 * Build & Publish, build output is in src\Feedability\bin\Release\PublishOutput
+* __Adjust appsettings.json to appropriate IP Rate Limiting (or disable entirely).__ This is mainly to prevent people from using the demo site as a real feed generator
 * Run the web interface which will provide UI for testing the Web API (either by hosting in IIS with the [.NET Core Windows Server Hosting bundle](https://go.microsoft.com/fwlink/?LinkId=817246) or via the `dotnet Feedability.dll` command)
 * Test article Readability output (adjust white/blacklist css selectors) and Feed output
 * Provide the feed link to the RSS reader
@@ -29,6 +32,7 @@ The server side is built using:
 * [mozilla readability](https://github.com/mozilla/readability) - a fork of the original Arc90 readability javascript library
 * [PhantomJS](http://phantomjs.org/) - a headless web browser to fetch web pages and run readability
 * [Sqlite](https://www.sqlite.org/) and the [Microsoft.Data.Sqlite](https://github.com/aspnet/Microsoft.Data.Sqlite) .NET core interface for caching processed feeds
+* [AspNetCoreRateLimit](https://github.com/stefanprodan/AspNetCoreRateLimit) - intentionally rate limiting the server to prevent abuse
 
 The client side uses:
 * [Polymer Project](https://www.polymer-project.org/1.0/) - web components for UI and material design
