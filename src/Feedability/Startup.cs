@@ -35,6 +35,9 @@ namespace Feedability
 			services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>(); // inject counter 
 			services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>(); // inject rule store
 
+			// set up service options
+			services.Configure<Controllers.FullFeedOptions>(Configuration.GetSection("FullFeed"));
+
 			// Add framework services.
 			services.AddMvc();
         }

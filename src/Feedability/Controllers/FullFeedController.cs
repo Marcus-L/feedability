@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,6 +31,11 @@ namespace Feedability.Controllers
 		public DateTime LastFetchedUTC { get; set; }
 	}
 
+	public class FullFeedOptions
+	{
+		public int MaxFeedEntriesProcessed { get; set; } = 5; // default to 5 if options not set
+	}
+
     [Route("api/[controller]")]
     public class FullFeedController : Controller
     {
@@ -38,9 +44,13 @@ namespace Feedability.Controllers
 		// store hosting environment to get info on the path to find the phantomjs files
 		private static IHostingEnvironment _env;
 
-		public FullFeedController(IHostingEnvironment env)
+		// store injected options
+		private readonly IOptions<FullFeedOptions> _optionsAccessor;
+
+		public FullFeedController(IHostingEnvironment env, IOptions<FullFeedOptions> optionsAccessor)
 		{
 			_env = env;
+			_optionsAccessor = optionsAccessor;
 		}
 
 		// debug method to show which articles are cached
@@ -137,7 +147,7 @@ namespace Feedability.Controllers
 					feedDoc.XPathSelectElements("/atom:feed/atom:link[@rel='hub']", nsManager)?
 						.ToList().ForEach(x => x.Remove()); // atom
 
-					TransformArticles(url, whitelist, blacklist, articles);
+					TransformArticles(url, whitelist, blacklist, articles, _optionsAccessor.Value.MaxFeedEntriesProcessed);
 
 					retval.Content = feedDoc.ToString();
 				}
@@ -152,7 +162,11 @@ namespace Feedability.Controllers
 
 		// performs the translation of articles, either using cache or calling the 
 		// phantomJS helper to run readability on the article link url
-		private static void TransformArticles(string feedUrl, string whitelist, string blacklist, IEnumerable<ArticleInfo> articles)
+		private static void TransformArticles(
+			string feedUrl, 
+			string whitelist, string blacklist, 
+			IEnumerable<ArticleInfo> articles, 
+			int maxFeedEntriesProcessed)
 		{
 			// check cache first
 			using (var conn = SqliteUtil.GetConn())
@@ -178,7 +192,7 @@ namespace Feedability.Controllers
 						else
 						{
 							// only process up to five items each time
-							if (articleCount++ >= 5) break;
+							if (articleCount++ >= maxFeedEntriesProcessed) break;
 
 							// if not cached, make it readable!
 							var pr = PhantomReadability.Get(_env.ContentRootPath, article.ArticleUrl, whitelist, blacklist);
