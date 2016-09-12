@@ -45,9 +45,6 @@ namespace Feedability
     {
 		public static ReadabilityObject Get(string contentRoot, string url, string whitelist, string blacklist, int timeout = 15000)
 		{
-			// current chrome UA
-			string useragent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36";
-
 			// injected JS to alter the outcome of the readability algorithm
 			string inject = @"
 function() {
@@ -71,6 +68,39 @@ function() {
 				inject += string.Join("\n", blacklist.Split(',').Select(bl => "feedability_el('" + bl.Trim() + "',true);"));
 
 			inject += "\n}";
+
+			int tries = 3;
+			while (tries-- > 0)
+			{
+				try
+				{
+					// try to run the process 3x, it crashes so much, it's the worst/
+					// "Fatal Windows exception, code 0xc0000005. PhantomJS has crashed..."
+					return RunPhantomJSProcess(contentRoot, url, inject, timeout);
+				}
+				catch (Exception ex)
+				{
+					if (tries == 0)
+					{
+						return new ReadabilityObject
+						{
+							error = new ReadabilityError
+							{
+								message = ex.Message
+							}
+						};
+					}
+				}
+			}
+
+			// the error should be returned on the third loop
+			throw new Exception("This should never happen");
+		}
+
+		public static ReadabilityObject RunPhantomJSProcess(string contentRoot, string url, string inject, int timeout)
+		{
+			// current chrome UA
+			string useragent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36";
 
 			// run the PhantomJS process using the phantom-scrape.js file from readable-proxy
 			// see: https://github.com/n1k0/readable-proxy/blob/master/phantom-scrape.js for details
@@ -137,13 +167,7 @@ function() {
 						var retval = JsonConvert.DeserializeObject<ReadabilityObject>(json);
 						if (retval == null)
 						{
-							return new ReadabilityObject
-							{
-								error = new ReadabilityError
-								{
-									message = error.ToString()
-								}
-							};
+							throw new Exception(error.ToString());
 						}
 						return retval;
 					}
