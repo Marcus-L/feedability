@@ -45,6 +45,31 @@ namespace Feedability
     {
 		public static ReadabilityObject Get(string contentRoot, string url, string whitelist, string blacklist, int timeout = 15000)
 		{
+			try
+			{
+				var uri = new UriBuilder(url);
+				if (uri.Scheme != "http" && uri.Scheme != "https")
+				{
+					return new ReadabilityObject
+					{
+						error = new ReadabilityError
+						{
+							message = "Only 'http' and 'https' schemes are allowed."
+						}
+					};
+				}
+			}
+			catch (Exception)
+			{
+				return new ReadabilityObject
+				{
+					error = new ReadabilityError
+					{
+						message = "Invalid url: " + url
+					}
+				};
+			}
+
 			// injected JS to alter the outcome of the readability algorithm
 			string inject = @"
 function() {
